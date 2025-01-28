@@ -93,15 +93,16 @@ class Admin:
     
     def visualizar_conductores(self):
         if not self.conductores:
-             print("----------------------------------------------")
-             print("No hay conductores registrados.")
+            print("----------------------------------------------")
+            print("No hay conductores registrados.")
         else:
             for conductor in self.conductores:
-                   print("----------------------------------------------")
-                   print(f"\nConductor: {conductor.nombre} (ID: {conductor.id_conductor})")
-            if conductor.horarios:
-                for horario in conductor.horarios:
-                    bus_asignado = None
+                print("----------------------------------------------")
+                print(f"\nConductor: {conductor.nombre} (ID: {conductor.id_conductor})")
+            
+                if conductor.horarios:
+                    for horario in conductor.horarios:
+                      bus_asignado = None
                     # Buscando el bus asignado al conductor
                     for bus in self.buses:
                         if conductor in bus.conductores_asignados and horario in bus.horarios:
@@ -115,9 +116,9 @@ class Admin:
                     else:
                         print("----------------------------------------------")
                         print(f"  No hay bus asignado para el horario {horario}.")
-            else:
-                print("----------------------------------------------")
-                print("  No tiene horarios asignados.")
+                else:
+                    print("----------------------------------------------")
+                    print("  No tiene horarios asignados.")
 
     def menu(self):
         while True:
