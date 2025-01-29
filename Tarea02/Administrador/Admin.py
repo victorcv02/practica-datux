@@ -51,33 +51,39 @@ class Admin:
 
     def agregar_horario_conductor(self):
         print("----------------------------------------------")
-        nombre = input("Ingrese el nombre del conductor: ").upper() 
-        conductor = self.encontrar_conductor(nombre)
+        id_conductor = input("Ingrese el ID del conductor: ").upper()
+        conductor = self.encontrar_conductor(id_conductor)
         if conductor:
-            horario = input("Ingrese el horario (HH:MM): ")
-            conductor.agregar_horario(horario)
-            print("----------------------------------------------")
-            print(f"Horario {horario} asignado al conductor {nombre}.")
+            horario_inicio = input("Ingrese el horario de inicio (HH:MM): ")
+            horario_fin = input("Ingrese el horario de fin (HH:MM): ")
+            conductor.agregar_horario(horario_inicio, horario_fin)
         else:
             print("----------------------------------------------")
-            print(f"Conductor {nombre} no encontrado.")
+            print(f"Conductor con ID {id_conductor} no encontrado.")
 
     def asignar_bus_a_conductor(self):
         print("----------------------------------------------")
         id_bus = input("Ingrese el ID del bus: ").upper() 
         bus = self.encontrar_bus(id_bus)
+        
         if bus:
-            id_conductor = input("Ingrese el ID del conductor: ")
+            id_conductor = input("Ingrese el ID del conductor: ").upper()
             conductor = self.encontrar_conductor(id_conductor)
-            if conductor:
-                horario = input("Ingrese el horario (HH:MM): ")
-                bus.asignar_conductor(conductor, horario)
+            if conductor:               
+                if conductor.horarios_conductor:
+                    for horario in conductor.horarios_conductor:
+                        if any(horario in c.horarios_conductor for c in bus.conductores_asignados):
+                            print(f"Ya hay un conductor asignado para el horario {horario} en el bus {bus.id_bus}.")
+                        else:
+                            bus.conductores_asignados.append(conductor)
+                            print(f"Conductor {conductor.nombre} asignado al bus {bus.id_bus} en el horario {horario}.")
+                else:
+                    print(f"El conductor {conductor.nombre} no tiene horarios asignados.")
             else:
-                print("----------------------------------------------")
                 print(f"Conductor {id_conductor} no encontrado.")
         else:
-            print("----------------------------------------------")
             print(f"Bus {id_bus} no encontrado.")
+
 
     def encontrar_bus(self, id_bus):
         for bus in self.buses:
@@ -99,27 +105,41 @@ class Admin:
             for conductor in self.conductores:
                 print("----------------------------------------------")
                 print(f"\nConductor: {conductor.nombre} (ID: {conductor.id_conductor})")
-            
-                if conductor.horarios:
-                    for horario in conductor.horarios:
-                      bus_asignado = None
-                    # Buscando el bus asignado al conductor
-                    for bus in self.buses:
-                        if conductor in bus.conductores_asignados and horario in bus.horarios:
-                            bus_asignado = bus
-                            break
-                    if bus_asignado:
-                        print("----------------------------------------------")
-                        print(f"  Bus asignado: {bus_asignado.id_bus}")
-                        print(f"  Ruta del bus: {bus_asignado.ruta}")
-                        print(f"  Horario: {horario}")
-                    else:
-                        print("----------------------------------------------")
-                        print(f"  No hay bus asignado para el horario {horario}.")
+
+                if conductor.horarios_conductor:
+                    for horario in conductor.horarios_conductor:
+                        horario_inicio, horario_fin = horario.split(" - ")
+                        bus_asignado = None
+                        for bus in self.buses:
+                            if conductor in bus.conductores_asignados:
+                                bus_asignado = bus
+                                break
+
+                        if bus_asignado:
+                            print(f"  Bus asignado: {bus_asignado.id_bus}")
+                            print(f"  Ruta del bus: {bus_asignado.ruta if bus_asignado.ruta else 'No asignada'}")
+                            print(f"  Horario de trabajo: {horario_inicio} - {horario_fin}")
+                        else:
+                            print(f"  No tiene un bus asignado para el horario {horario_inicio} - {horario_fin}.")
                 else:
-                    print("----------------------------------------------")
                     print("  No tiene horarios asignados.")
 
+
+
+    def visualizar_buses(self):
+        if not self.buses:
+            print("----------------------------------------------")
+            print("No hay buses registrados.")
+        else:
+            for bus in self.buses:
+                print(f"\nBus ID: {bus.id_bus}")
+                if bus.horarios_bus:
+                    for horario in bus.horarios_bus:
+                        print(f"  Horario asignado: {horario}")
+                else:
+                    print("  No tiene horarios asignados.")
+
+                    
     def menu(self):
         while True:
             print("\n--------------- MENU ITERATIVO ---------------")
@@ -130,10 +150,10 @@ class Admin:
             print("5. Agregar horario a un conductor")
             print("6. Asignar bus a un conductor")
             print("7. Visualizar conductores registrados")
-            print("8. Salir")
+            print("8. Visualizar buses registrados")
+            print("9. Salir")
             print("----------------------------------------------")
             opcion = input("Seleccione una opción: ")
-            
 
             if opcion == '1':
                 self.agregar_bus()
@@ -150,7 +170,8 @@ class Admin:
             elif opcion == '7':
                 self.visualizar_conductores()
             elif opcion == '8':
+                self.visualizar_buses()
+            elif opcion == '9':
                 break
             else:
                 print("Opción inválida. Intente nuevamente.")
-
